@@ -1,6 +1,7 @@
 -- Data exploration using COVID-19 statistics in BigQuery.
+-- Skills Utilized: Joins, CTE's, Window Functions, Aggregate Functions, Creating Views
 -- Data obtained from Our World In Data: https://ourworldindata.org/covid-deaths
--- Portfolio project created by Alex Freburg.
+
 
 -- Looking at all the data
 
@@ -140,5 +141,8 @@ SELECT
 FROM `portfolioprojects-353018.COVID19.COVIDDeaths` AS dea
   JOIN `portfolioprojects-353018.COVID19.COVIDVaccinations` AS vac
   ON dea.location = vac.location
-WHERE dea.continent IS NOT NULL
-ORDER BY dea.location, dea.date;
+WHERE dea.continent IS NOT NULL;
+
+
+-- Portfolio project created by Alex Freburg: https://www.youtube.com/watch?v=qfyynHBFOsM&list=PLUaB-1hjhk8H48Pj32z4GZgGWyylqv85f
+-- Thank you for checking this out!
