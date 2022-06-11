@@ -1,5 +1,6 @@
---Data exploration using COVID-19 statistics in BigQuery.
---Portfolio project created by Alex Freburg.
+-- Data exploration using COVID-19 statistics in BigQuery.
+-- Data obtained from Our World In Data: https://ourworldindata.org/covid-deaths
+-- Portfolio project created by Alex Freburg.
 
 -- Looking at all the data
 
@@ -7,7 +8,7 @@ SELECT *
 FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
 ORDER BY location ASC;
 
---Select data that we're going to be using
+-- Select data that we're going to be using
 
 SELECT
   location,
@@ -126,7 +127,7 @@ SELECT *
 FROM PopvsVac
 
 
--- Creating vewi to store data for visualization
+-- Creating view to store data for visualization
 
 CREATE VIEW percent_population_vaccinated AS
 SELECT
