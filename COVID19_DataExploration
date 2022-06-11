@@ -1,0 +1,143 @@
+--Data exploration using COVID-19 statistics in BigQuery.
+--Portfolio project created by Alex Freburg.
+
+-- Looking at all the data
+
+SELECT *
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+ORDER BY location ASC;
+
+--Select data that we're going to be using
+
+SELECT
+  location,
+  date,
+  total_cases,
+  new_cases,
+  total_deaths,
+  population
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+ORDER BY location, date;
+
+-- Looking at Total Cases vs Total Deaths
+-- Likelyhood of dying if you contract COVID-19 in United States
+
+SELECT
+  location,
+  date,
+  total_cases,
+  total_deaths,
+  (total_deaths/total_cases)*100 AS death_percentage
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+WHERE location = 'United States'
+ORDER BY location, date, death_percentage;
+
+-- Looking at Total Cases vs Population
+-- Shows what percentage of population contracted COVID-19
+
+SELECT
+  location,
+  date,
+  total_cases,
+  population,
+  (total_cases/population)*100 AS percent_pop_infected
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+WHERE location = 'United States'
+ORDER BY location, date, percent_pop_infected;
+
+-- Looking at countries with highest infection rate compared to population
+
+SELECT
+  location,
+  date,
+  population,
+  MAX(total_cases) AS highest_infection_count,
+  MAX((total_cases/population))*100 AS percent_pop_infected
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+GROUP BY location, population, date
+ORDER BY percent_pop_infected DESC; 
+
+-- Showing countries with highest death count per population
+
+SELECT
+  location,
+  MAX(total_deaths) AS total_death_count,
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+WHERE continent IS NOT NULL
+GROUP BY location
+ORDER BY total_death_count DESC; 
+
+-- Showing continents with the highest death count per population
+
+SELECT
+  location,
+  MAX(total_deaths) AS total_death_count,
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+WHERE continent IS NULL
+GROUP BY location
+ORDER BY total_death_count DESC; 
+
+-- Global death percentage per day
+
+SELECT
+  date,
+  SUM(new_cases) AS total_cases,
+  SUM(new_deaths) AS total_deaths,
+  SUM(new_deaths)/SUM(new_cases)* 100 AS death_percentage
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths`
+WHERE continent IS NOT NULL
+GROUP BY date
+ORDER BY 1,2;
+
+-- Looking at total population vs vaccinations
+
+SELECT
+  dea.continent,
+  dea.location,
+  dea.date,
+  dea.population,
+  vac.new_vaccinations,
+  SUM(vac.new_vaccinations) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS rolling_vaccinations
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths` AS dea
+  JOIN `portfolioprojects-353018.COVID19.COVIDVaccinations` AS vac
+  ON dea.location = vac.location
+WHERE dea.continent IS NOT NULL
+ORDER BY dea.location, dea.date;
+
+--Creating CTE
+
+WITH PopvsVac
+AS 
+(
+SELECT
+  dea.continent,
+  dea.location,
+  dea.date,
+  dea.population,
+  vac.new_vaccinations,
+  SUM(vac.new_vaccinations) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS rolling_vaccinations
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths` AS dea
+  JOIN `portfolioprojects-353018.COVID19.COVIDVaccinations` AS vac
+  ON dea.location = vac.location
+WHERE dea.continent IS NOT NULL;
+)
+
+SELECT *
+FROM PopvsVac
+
+
+-- Creating vewi to store data for visualization
+
+CREATE VIEW percent_population_vaccinated AS
+SELECT
+  dea.continent,
+  dea.location,
+  dea.date,
+  dea.population,
+  vac.new_vaccinations,
+  SUM(vac.new_vaccinations) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS rolling_vaccinations
+FROM `portfolioprojects-353018.COVID19.COVIDDeaths` AS dea
+  JOIN `portfolioprojects-353018.COVID19.COVIDVaccinations` AS vac
+  ON dea.location = vac.location
+WHERE dea.continent IS NOT NULL
+ORDER BY dea.location, dea.date;
